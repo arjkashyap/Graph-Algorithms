@@ -138,3 +138,128 @@ private boolean isValid(int[][] grid, int r, int c) {
 Add the rotten oranges to the queue to init the stage where time is 0. Mark the visted oranges as -1 if you're allowed to modify the grid else use a hashset or matrix. 
 While q is not empty, visit the neighbours of the q front for every level and increase  the time till.
 **Keep in mind:**  Be careful with the visited nodes. 
+
+
+### 3. Topological Sort
+Topological sorting for **Directed Acyclic Graph (DAG)** is a linear ordering of vertices such that for every directed edge u-v, vertex u comes before v in the ordering.
+
+_Note: Topological Sorting for a graph is not possible if the graph is not a DAG._
+
+There are two ways to perform topological Sorting
+
+- DFS 
+- Kahns Algorithm (BFS approach)
+
+As noted above, topoligcal sorting is only possible for DAG i;e directed Acyclic Graphs. We use this property of this algoirthm to perform validation tasks on graphs such as **Cycle Detection** in a DAG.
+
+We will demonstrate the two approaches using the following problem statement 
+
+#### Example Question
+[Leetcode-210: Course Schedule II](https://leetcode.com/problems/course-schedule-ii/)
+
+##### DFS Approach
+
+
+Perform DFS on the adj List and maintain two states of the nodes 
+- visited : The nodes that are done/processed
+- visiting: The nodes that we are currenty traversing 
+
+While we want to just skip the former, we want to see if during our traversal we come across a node that is being currently processed. Soon as we encounter one such node, we break out and return an empty array.
+Else we just store the order in which we traverse them in an arrayList that would form our dependency tree.
+
+```java
+
+class Solution {
+    Set<Integer> visited = new HashSet<>();
+    Set<Integer> visiting = new HashSet<>();
+    List<Integer> resList = new ArrayList<>();
+
+    public int[] findOrder(int n, int[][] pre) {
+        List<List<Integer>> adj = new ArrayList<>();
+        for(int i = 0; i < n; i++) {
+            adj.add(new ArrayList<>());
+        }
+        for(int[] p : pre) {
+            adj.get(p[0]).add(p[1]);
+        }
+
+        for(int i = 0; i < n; i++) {
+            if(visited.contains(i))
+                continue;
+            if(containsCycle(adj, i))
+                return new int[0];
+        }
+
+        return resList.stream().mapToInt(i -> i).toArray();
+    }
+
+    private boolean containsCycle(List<List<Integer>> adj, int curr) {
+
+        visiting.add(curr);
+        for(int nei : adj.get(curr)) {
+            if(visited.contains(nei)) 
+                continue;
+            if(visiting.contains(nei) || containsCycle(adj, nei)) 
+                return true;
+        }
+
+        visiting.remove(curr);
+        visited.add(curr);
+        resList.add(curr);
+
+        return false;
+    }
+}
+
+```
+
+
+##### Kahn's Algorithm (BFS Approach)
+
+
+Calculate the indegree of each vertex while building the adj list. Indegree is the number of incoming edges to a vertex in a DAG. Enqueue the verticies which have indegree==0 
+- perform bfs and on every poll item, reduce the indegree of its neighbour
+- If the neighbours indegree becomes zero: enqueue it
+
+```java
+class Solution {
+
+    public int[] findOrder(int n, int[][] pre) {
+        int[] indegree = new int[n];
+        List<Integer> result = new ArrayList<>();
+        Map<Integer, List<Integer>> adj = new HashMap<>();
+        
+        for (int i = 0; i < n; i++) 
+            adj.put(i, new ArrayList<>()); 
+        
+        for(int[] p : pre) {
+            adj.get(p[1]).add(p[0]);
+            indegree[p[0]]++;
+        }
+
+        Queue<Integer> q = new LinkedList<>();
+        for(int i = 0; i < n; i++) {
+            if(indegree[i]==0) q.add(i);
+        }
+
+        while(!q.isEmpty()) {
+            int curr = q.poll();
+            result.add(curr);
+            for(var nei : adj.get(curr)) {
+                indegree[nei]--;
+                if(indegree[nei]==0)
+                    q.add(nei);
+            }
+        }
+        
+        // return empty array if cycle is detected
+        for(int id : indegree) {
+            if(id != 0) return new int[]{};
+        }
+
+        return result.stream().mapToInt(Integer::intValue).toArray();
+    }
+}
+
+```
+
