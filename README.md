@@ -133,6 +133,7 @@ private boolean isValid(int[][] grid, int r, int c) {
 }
 
 ```
+<br/>
 
 ##### Approach
 Add the rotten oranges to the queue to init the stage where time is 0. Mark the visted oranges as -1 if you're allowed to modify the grid else use a hashset or matrix. 
@@ -212,6 +213,7 @@ class Solution {
 }
 
 ```
+<br/>
 
 
 ##### Kahn's Algorithm (BFS Approach)
@@ -262,4 +264,166 @@ class Solution {
 }
 
 ```
+<br/>
 
+### 4. Dijikstra's Algorithm for Shortest Path in Weighted graph
+This algorithm is used for getting the shortest distance in a weighted graph that may or may not contain cycle
+
+**Use Case:** 
+- Dijkstra's algorithm solves the single-source shortest-paths problem in edge-weighted digraphs with nonnegative weights.
+-  Generate a SPT (shortest path tree) with a given source as a root
+
+The implementation is very simple, we use a priority queue to store the sum of weight from current u to that node and pick up nodes with shorter distance in greedy manner
+
+- one set contains vertices included in the shortest-path tree, 
+- other set includes vertices not yet included in the shortest-path tree. 
+
+At every step of the algorithm, find a vertex that is in the other set (set not yet included) and has a minimum distance from the source.
+
+Time Complexity: O(V2)
+Auxiliary Space: O(V)
+
+
+#### Example Question
+[Leetcode-743: Network Delay Time](https://leetcode.com/problems/network-delay-time/)
+
+```java
+class Solution {
+    public int networkDelayTime(int[][] times, int n, int k) {
+        Map<Integer, List<int[]>> adj = new HashMap<>();
+        Map<Integer, Integer> shortest = new HashMap<>();
+        
+        for(int i = 1; i <= n; i++) {
+            adj.put(i, new ArrayList<>());
+        }
+        for(int[] t : times) {
+            adj.get(t[0]).add(new int[]{t[1], t[2]});
+        }
+
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> Integer.compare(a[1], b[1]));
+        pq.add(new int[]{k, 0});
+
+        while(!pq.isEmpty()) {
+            int[] uw = pq.poll();
+            int u = uw[0], w = uw[1];
+
+            if(shortest.containsKey(u))
+                continue;
+            
+            shortest.put(u, w);
+            System.out.println(u);
+            // visist neighbours
+            for(int[] vw : adj.get(u)) {
+                int v = vw[0], w2 = vw[1];
+                if(!shortest.containsKey(v))
+                    pq.add(new int[]{v, (w + w2)});
+            }
+        }
+
+        int maxTime = -1;
+        for(int i = 1; i <= n; i++) {
+            if(!shortest.containsKey(i))
+                return -1;
+        }
+
+        for(int node : shortest.keySet()) {
+            int time = shortest.get(node);
+            if(time > maxTime)
+                maxTime = time;
+        }
+
+        return maxTime;
+    }
+}
+```
+<br/>
+
+### Kosaraju's Algorithm
+
+**What is a Strongly Connected Component (SCC)?**
+A strongly connected component in a **Directed Graph** is the component of a  graph that has a path from every vertex to every other vertex in that component. It can only be used in a directed graph.
+
+![SCC in graph](https://media.geeksforgeeks.org/wp-content/uploads/20230801122248/scc_fianldrawio.png "SCC")
+
+
+#### Approach
+- Order the vertices in decreasing order of finish time in DFS
+- Reverse all edges
+- Do DFS of the reversed graph in the order obtained in step1
+- For every vertex print all reachable vertex as SCC
+
+#### Why it works ? 
+
+Kosaraju's algorithm works because it uses two passes of depth-first search (DFS):
+
+- First DFS Pass: This pass records the finishing times of nodes. Nodes that finish last are those that have no further nodes to visit, meaning they are deeply nested in the graph's structure.
+
+- Transpose the Graph: Reversing all edges in the graph means that all paths are reversed, making the strongly connected components (SCCs) intact but reversing the direction of travel within them.
+
+- Second DFS Pass: Processing nodes in the order of their finishing times (from the stack) ensures that when we start a DFS in the transposed graph, we only reach nodes within the same SCC. This is because nodes that are reachable in the original graph remain reachable in the reversed paths, effectively isolating SCCs.
+
+By leveraging the finishing times and the transposed graph, the algorithm efficiently identifies all SCCs.
+
+**Time complexity:** O(V * (V + M)), because for each pair of vertices we are checking whether a path exists between them.
+**Auxiliary Space:** O(V) 
+
+#### Example Question
+[Leetcode-2360: Longest Cycle in a Graph](https://leetcode.com/problems/longest-cycle-in-a-graph/)
+
+```java
+class Solution {
+    int count = 0;
+    public int longestCycle(int[] edges) {
+        // Implemting Kosarajus algirthm
+        int res = 0;
+        int n = edges.length;
+        boolean[] vis = new boolean[n];
+        Stack<Integer> st = new Stack<>();      // st used to store time taken in reverse
+        Map<Integer, List<Integer>> revAdj = new HashMap<>();
+
+        for(int i = 0; i < n; i++)
+            revAdj.put(i, new ArrayList<>());
+
+        for(int i = 0; i < n; i++) {
+            if(edges[i] != -1)
+                revAdj.get(edges[i]).add(i);
+        }
+
+
+        // begin dfs and
+        for(int i = 0; i < n; i++) {
+            if(vis[i]) continue;
+            dfs(edges, vis, st, i);
+        }
+        Arrays.fill(vis, false);
+
+        // perform dfs based on reverse order of time taken
+        while(!st.isEmpty()) {
+            int node = st.pop();
+            if(vis[node]) continue;
+            count=0;
+            res = Math.max(res, dfs2(revAdj, vis, node));
+        }
+
+        return (res == 1) ? -1 : res;
+    }
+
+    private void dfs(int[] edges, boolean[] vis, Stack<Integer> st, int n) {
+        vis[n]=true;
+        if(edges[n] != -1 && !vis[edges[n]])
+            dfs(edges, vis, st, edges[n]);
+        st.push(n);
+    }
+
+    private int dfs2(Map<Integer, List<Integer>> adj, boolean[] vis, int n) {
+        vis[n]=true;
+        count++;
+        for(int nei : adj.get(n)) {
+            if(!vis[nei])
+                dfs2(adj, vis, nei);
+        }
+        
+        return count;
+    }
+}
+```
