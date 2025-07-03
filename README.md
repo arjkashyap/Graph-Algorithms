@@ -491,14 +491,13 @@ class Solution {
 <br/>
 
 
-### Prim's Algorithm
-
-Prim's algorithm is used to find the Minimum Spanning tree in a graph. A MST is basically a tree derived from a graph where each node is able to visit all the other nodes and there is NO cycle.
-
-The implementation of Prim's algorithm is very close to Dijikstra's algorithm with little to no changes involved.
+### Tarjan's Algorithm
+Tarjan's Algorithm can also be used to find SCC in Directed Graphs. 
+How is it different from Kosaraju's algoirthm
+The former requires two (if not more) traversals of the graph. 
 
 #### Example Question
-[Leetcode-1584:  Min Cost to Connect All Points](https://leetcode.com/problems/min-cost-to-connect-all-points/)
+[Leetcode-1192:  Critical Connections in a network](https://leetcode.com/problems/critical-connections-in-a-network/)
 
 ```java
 class Solution {
@@ -559,15 +558,14 @@ class Solution {
 ```
 <br/>
 
-### Tarjan's Algorithm
-Tarjan's Algorithm can also be used to find SCC in Directed Graphs. 
-How is it different from Kosaraju's algoirthm
-The former requires two (if not more) traversals of the graph. 
+### Prim's Algorithm
+
+Prim's algorithm is used to find the Minimum Spanning tree in a graph. A MST is basically a tree derived from a graph where each node is able to visit all the other nodes and there is NO cycle.
+
+The implementation of Prim's algorithm is very close to Dijikstra's algorithm with little to no changes involved.
 
 #### Example Question
-[Leetcode-1192:  Critical Connections in a network](https://leetcode.com/problems/critical-connections-in-a-network/)
-
-
+[Leetcode-1584:  Min Cost to Connect All Points](https://leetcode.com/problems/min-cost-to-connect-all-points/)
 ```java
 
 class Solution {
